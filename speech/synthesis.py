@@ -116,7 +116,7 @@ class SpeechSynthesizer:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.config["voice_id"],
-                model_id="eleven_multilingual_v2",
+                model_id=self.config.get("model", "eleven_multilingual_v2"),
                 voice_settings=voice_settings
             )
             

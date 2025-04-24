@@ -227,7 +227,7 @@ class SpeechRecognizer:
                             transcript = self.openai_client.audio.transcriptions.create(
                                 model="whisper-1",  # This is the Whisper Turbo model via API
                                 file=audio_file,
-                                language="en",
+                                language=None if self.config["language"] == "auto" else self.config["language"],
                                 temperature=0.0,
                                 prompt="This is a conversation with an AI assistant."
                             )
@@ -268,7 +268,7 @@ class SpeechRecognizer:
                     # Use local Whisper model
                     result = self.whisper_model.transcribe(
                         audio_data, 
-                        language="en",
+                        language=None if self.config["language"] == "auto" else self.config["language"],
                         fp16=False,
                         temperature=0.0,
                         initial_prompt="The following is a conversation with an AI assistant."
@@ -281,7 +281,7 @@ class SpeechRecognizer:
             elif self.config["engine"] == "google":
                 text = self.recognizer.recognize_google(
                     audio,
-                    language=self.config["language"]
+                    language=self.config["language"] if self.config["language"] != "auto" else None
                 )
                 return self._post_process_text(text)
                 

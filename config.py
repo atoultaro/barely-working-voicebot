@@ -16,7 +16,7 @@ SPEECH_RECOGNITION = {
     "engine": "whisper",  # Options: "whisper", "google", "sphinx"
     "implementation": "elevenlabs_api",  # Options: "local", "openai_api", "elevenlabs_api"
     "model_size": "turbo",  # Options for local model: "tiny", "base", "small", "medium", "large", "turbo"
-    "language": "en-US",
+    "language": "auto",  # Use "auto" for automatic language detection, or specify a language code like "en", "fr", "es", "de", "ja", etc.
     "sample_rate": 16000,
     "chunk_size": 1024,
     "timeout": 5,  # seconds
@@ -30,6 +30,7 @@ NLU = {
     "temperature": 0.7,
     "max_tokens": 150,
     "context_window": 10,  # Number of conversation turns to remember
+    "language": "auto",  # Use "auto" for automatic language detection based on user input
 }
 
 # Agent Settings
@@ -65,6 +66,7 @@ EMOTIONS = {
     "similarity_boost": 0.75,
     "style": 0.0,  # How much to apply speaking style (0-1)
     "use_speaker_boost": True,
+    "model": "eleven_multilingual_v2",  # Use multilingual model for international language support
 }
 
 # Audio Settings
@@ -72,6 +74,33 @@ AUDIO = {
     "output_device": None,  # None for default
     "input_device": None,  # None for default
     "volume": 1.0,
+}
+
+# Language Settings
+LANGUAGE = {
+    "default": "auto",  # Use "auto" for automatic language detection
+    "supported": [
+        "auto",  # Automatic detection
+        "en",    # English
+        "es",    # Spanish
+        "fr",    # French
+        "de",    # German
+        "it",    # Italian
+        "pt",    # Portuguese
+        "nl",    # Dutch
+        "ru",    # Russian
+        "ja",    # Japanese
+        "zh",    # Chinese
+        "ko",    # Korean
+        "ar",    # Arabic
+        "hi",    # Hindi
+        "tr",    # Turkish
+        "pl",    # Polish
+        "vi",    # Vietnamese
+        "th",    # Thai
+        "id",    # Indonesian
+    ],
+    "fallback": "en",  # Fallback language if detection fails
 }
 
 # Logging Settings

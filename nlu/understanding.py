@@ -71,11 +71,14 @@ class NLUEngine:
             - personal_question: User is asking about you personally
             - opinion_request: User is asking for your opinion
             - feedback: User is providing feedback
+            - language_change: User wants to change the conversation language (specify language in entities)
             
             Be flexible in your intent classification. Don't overclassify casual questions as philosophical inquiries about AI personhood.
             Focus on the practical intent behind the user's words rather than literal interpretation.
             
             Extract all relevant entities from the user's speech.
+            
+            If the user is asking about speaking in a different language, use the intent "language_change" and include the language in the entities.
             """
             
             # Get conversation history for context
@@ -106,6 +109,14 @@ class NLUEngine:
                 entities = {}
             
             logger.info(f"Extracted intent: {intent}, entities: {entities}")
+            
+            # Special handling for language change intent
+            if intent == "language_change" and "language" in entities:
+                # No need to rely on MCP for language changes - handle directly
+                # The TTS and STT services will use the language automatically
+                logger.info(f"Language change request detected: {entities['language']}")
+                # We don't need to modify any settings as our services now use auto-detection
+                
             return intent, entities
             
         except Exception as e:
