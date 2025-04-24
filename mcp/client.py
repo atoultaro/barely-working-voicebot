@@ -31,6 +31,9 @@ class MCPClient:
         self.message_queue = asyncio.Queue()
         self.response_futures = {}
         self.next_message_id = 1
+        self.connection_failed = False  # Track if connection has failed before
+        self.last_connection_attempt = 0  # Track when we last attempted to connect
+        self.recent_failure_timeout = 60  # Timeout for recent connection failures
         logger.info("MCP client initialized")
     
     def execute(self, action: Dict[str, Any]) -> Dict[str, Any]:
@@ -146,8 +149,18 @@ class MCPClient:
         Returns:
             Result of the action execution
         """
+        # Check if we've had connection failures recently
+        current_time = time.time()
+        if self.connection_failed and (current_time - self.last_connection_attempt < self.recent_failure_timeout):  
+            logger.info("Skipping WebSocket connection attempt due to recent failure")
+            return {
+                "success": False,
+                "error": "WebSocket connection unavailable (skipping retry)"
+            }
+            
         # Ensure WebSocket connection is established
         if not self.ws_connected:
+            self.last_connection_attempt = current_time
             self._connect_websocket()
             
             # Wait for connection to establish
@@ -156,10 +169,14 @@ class MCPClient:
                 time.sleep(0.1)
                 
             if not self.ws_connected:
+                self.connection_failed = True  # Mark that connection has failed
                 return {
                     "success": False,
                     "error": "Failed to establish WebSocket connection"
                 }
+        
+        # Connection succeeded, reset failure flag
+        self.connection_failed = False
         
         # Create message
         message_id = self._get_next_message_id()

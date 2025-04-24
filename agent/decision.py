@@ -36,6 +36,13 @@ class DecisionEngine:
         """
         logger.info(f"Deciding action for intent: {intent}")
         
+        # Handle language change intent specially - no need to use MCP
+        if intent == "language_change":
+            logger.info(f"Language change intent detected: {entities.get('language', 'unknown')}")
+            # Return None to indicate no external action needed
+            # The language handling is done at the NLU and TTS/STT level
+            return None
+        
         # Check if intent directly maps to an action
         if intent in self.available_actions:
             return self._create_action_from_intent(intent, entities)
@@ -168,8 +175,38 @@ class DecisionEngine:
             entities: Dictionary of extracted entities
             
         Returns:
-            Action to take
+            Action to take or None if no action is needed
         """
+        # Handle content generation tasks locally (poems, stories, etc.)
+        task = entities.get("task")
+        task_specific = entities.get("task_specific", "")
+        
+        # Check if this is a content generation task that can be handled locally
+        content_generation_tasks = ["recite a poem", "tell a story", "sing a song", "read poetry"]
+        
+        # Check for exact matches in task
+        if task and any(t == task for t in content_generation_tasks):
+            logger.info(f"Content generation request detected: {task}")
+            # Return None to indicate no external action needed
+            return None
+            
+        # Check for keywords in task_specific
+        poem_keywords = ["poem", "poetry", "诗", "朗读", "念", "recite", "read"]
+        story_keywords = ["story", "tale", "narrative", "故事"]
+        song_keywords = ["song", "sing", "歌"]
+        summary_keywords = ["summary", "summarize", "summarization", "overview", "brief"]
+        
+        if task_specific and any(keyword in task_specific.lower() for keyword in poem_keywords + story_keywords + song_keywords + summary_keywords):
+            logger.info(f"Content generation request detected via keywords: {task_specific}")
+            # Return None to indicate no external action needed
+            return None
+            
+        # Also check if task is simply "summary" or similar
+        if task and any(keyword in task.lower() for keyword in summary_keywords):
+            logger.info(f"Summary request detected: {task}")
+            # Return None to indicate no external action needed
+            return None
+        
         action_type = entities.get("action_type")
         
         if not action_type or action_type not in self.available_actions:

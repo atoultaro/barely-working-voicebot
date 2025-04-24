@@ -88,10 +88,26 @@ class Voicebot:
                 # Execute actions through MCP if needed
                 if action:
                     logger.info(f"Executing action: {action}")
-                    result = self.mcp_client.execute(action)
                     
-                    # Update response based on action result
-                    response, emotion = self.agent.handle_result(result)
+                    # Special handling for language-related intents
+                    if intent == "language_change" or (action.get("type") == "language_support"):
+                        # Handle language change locally without MCP
+                        language = entities.get("language", "unknown")
+                        logger.info(f"Handling language change to {language} locally")
+                        # The actual language handling is done by the TTS/STT services automatically
+                        # Just generate a response confirming the language change
+                        if not response:
+                            # If agent didn't already create a response, get one from NLU
+                            response, emotion = self.nlu_engine.generate_response(
+                                "language_change", 
+                                {"language": language}, 
+                                {"success": True}
+                            )
+                    else:
+                        # For non-language actions, use MCP
+                        result = self.mcp_client.execute(action)
+                        # Update response based on action result
+                        response, emotion = self.agent.handle_result(result)
                 
                 # Respond with emotional speech
                 if response:
